@@ -1,0 +1,128 @@
+﻿body {
+  font-family : Helvetica, Arial, Sans-Serif;
+  background-color: #B9B9B9;
+  overflow:hidden;
+}
+a {
+  cursor: pointer;
+}
+#maximizePanelContainer {
+  font-size: 4px;
+  position:absolute;
+  left: 0px;
+  top: 0px;
+  width: 15px;
+  height: 13px;
+  overflow: visible;
+  z-index: 1000;
+}
+.maximizePanel {
+  position:absolute;
+  left: 0px;
+  top: 0px;
+  width: 20px;
+  height: 20px;
+  margin: 2px 0px 0px 1px;
+  background: url('../images/261_expand_12rollover1.png') no-repeat;
+  cursor: pointer;
+}
+.maximizePanelOver {
+  background: url('../images/261_expand_12rollover2.png') no-repeat;    
+}
+
+#interfaceControlFrameMinimizeContainer {
+  position:relative;
+  font-size: 2px; /*for IE*/
+  text-align: right;
+  z-index: 100;
+    height: 20px;
+}
+#interfaceControlFrameMinimizeContainer a 
+{
+    display: inline-block;
+    width: 15px;
+    height: 20px;
+  font-size: 2px;
+  background: url('../images/260_collapse_12rollover1.png') no-repeat;
+  text-decoration: none;
+  margin: 5px 5px 0px 0px;
+}
+#interfaceControlFrame {
+    margin: 0px;
+}
+#interfaceControlFrameMinimizeContainer a:hover {
+  background: url('../images/260_collapse_12rollover2.png') no-repeat;
+}
+#interfaceControlFrameCloseContainer {
+    display: inline;
+    width: 15px;
+    height: 20px;
+    font-size: 2px;
+    margin: 5px 2px 0px 0px;
+}
+#interfaceControlFrameCloseContainer a 
+{
+  background: url('../images/259_close_12rollover1.png') no-repeat;
+    margin: 0px;
+  text-decoration: none;
+}
+#interfaceControlFrameCloseContainer a:hover 
+{
+  background: url('../images/259_close_12rollover2.png') no-repeat;
+}
+#interfaceControlFrameHeader li {
+    display: inline;
+}
+#interfaceControlFrameHeader a {
+  outline: none;
+  padding: 3px 10px 3px 10px;
+  margin-right: 1px;
+  text-decoration: none;
+  color: #575757;
+  white-space: nowrap;
+  background-color: #D3D3D3;
+}
+#interfaceControlFrameHeader a:link {}
+#interfaceControlFrameHeader a:hover {
+  color: #000000;
+}
+#interfaceControlFrameHeader a.selected {
+  background-color: White;
+  font-weight:bold;
+  padding: 3px 10px 4px 10px;
+}
+#interfaceControlFrameHeaderContainer {
+  overflow: visible;
+  width: 250px;
+}
+#interfaceControlFrameHeader {
+  position:relative;
+  list-style: none;
+  padding : 4px 0px 4px 0px;
+  font-size: 11px;
+  z-index: 50;
+}
+#interfaceControlFrameContainer {
+  position: absolute;
+  background-color: White;
+  overflow: hidden;
+  width: 100%;
+  /*height:100%;*/
+}
+
+#interfaceControlFrameLogoContainer {
+  background-color: White;
+  border-bottom: 1px solid #EFEFEF;
+  margin: -5px 0px 5px 0px;
+  padding: 10px 5px 5px 5px;
+  overflow: hidden;
+}
+#interfaceControlFrameLogoImageContainer {
+  text-align: center;
+}
+#interfaceControlFrameLogoCaptionContainer {
+  text-align: center;
+  margin: 5px 10px 0px 10px;
+  font-size: 11px;
+  color: #333;
+}

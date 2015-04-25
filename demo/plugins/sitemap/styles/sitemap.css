@@ -1,0 +1,310 @@
+﻿
+#sitemapHost {
+    font-size: 12px;
+    color:#333;
+    background-color:#FFF;
+    height: 100%;
+}
+
+#sitemapTreeContainer {
+    /*margin: 0px 8px 0px 10px;*/
+    position: absolute;
+    overflow: auto;
+    width: 100%;
+    /*height: 100%;*/
+    top: 31px;
+    bottom: 0px;
+}
+
+.sitemapTree {
+    /* list-style-type: none; */
+    margin: 5px 0px 10px -9px;
+    overflow:visible;
+}
+
+.sitemapTree ul {
+    list-style-type: none;
+    margin: 0px 0px 0px 0px;
+    padding-left: 0px;
+}
+
+.sitemapPlusMinusLink 
+{
+}
+
+.sitemapMinus 
+{
+	vertical-align:middle;
+    background: url('images/minus.gif');
+    background-repeat: no-repeat;
+	margin-right: 3px;	
+	margin-bottom: 1px;
+    height:9px;
+    width:9px;
+    display:inline-block;
+}
+
+.sitemapPlus 
+{
+	vertical-align:middle;
+    background: url('images/plus.gif');
+    background-repeat: no-repeat;
+	margin-right: 3px;	
+	margin-bottom: 1px;
+	height:9px;
+    width:9px;
+    display:inline-block;
+}
+
+.sitemapPageLink 
+{
+    margin-left: 0px;
+}
+
+.sitemapPageIcon 
+{
+	margin-bottom:-3px;
+    width: 16px;
+    height: 16px;
+    display: inline-block;
+    background: url('images/079_page_16.png');
+    background-repeat: no-repeat;
+}
+
+.sitemapFlowIcon
+{
+    background: url('images/086_case_16.png');
+}
+
+.sitemapFolderIcon
+{
+    background: url('images/235_folderclosed_16.png');
+}
+
+.sitemapFolderOpenIcon
+{
+    background: url('images/236_folderopen_16.png');
+}
+
+.sitemapPageName 
+{
+    margin-left: 3px;
+}
+
+.sitemapNode 
+{
+    margin:4px 0px 4px 0px;
+    white-space:nowrap;
+}
+
+.sitemapPageLinkContainer {
+    margin-left: 0px;
+    padding-bottom: 1px;
+}
+/*
+.sitemapNode div
+{
+	padding-top: 1px; 
+	padding-bottom: 3px;
+    padding-left: 20px;
+	height: 14px;
+}
+*/
+
+.sitemapExpandableNode 
+{
+	margin-left: 0px;
+}
+
+.sitemapHighlight 
+{
+	background-color : rgb(204,235,248);
+    font-weight: bold;
+}
+
+.sitemapGreyedName
+{
+	color: #AAA;
+}
+
+#sitemapToolbar 
+{
+	margin: 5px 5px 5px 5px;
+    height: 22px;
+}
+
+#sitemapToolbar .sitemapToolbarButton
+{
+    float: left;
+    width: 22px;
+    height: 22px;
+    border: 1px solid transparent;
+}
+
+#sitemapToolbar .sitemapToolbarButton:hover
+{
+    border: 1px solid rgb(0,157,217);
+    background-color : rgb(166,221,242);
+}
+
+#sitemapToolbar .sitemapToolbarButton:active
+{
+    border: 1px solid rgb(0,157,217);
+    background-color : rgb(204,235,248);
+}
+
+#sitemapToolbar .sitemapToolbarButtonSelected {
+    border: 1px solid rgb(0,157,217);
+    background-color : rgb(204,235,248);    
+}
+
+#linksButton {
+    background: url('images/233_hyperlink_16.png') no-repeat center center;
+}
+
+#adaptiveButton {
+    background: url('images/225_responsive_16.png') no-repeat center center;
+}
+
+#footnotesButton {
+    background: url('images/228_togglenotes_16.png') no-repeat center center;
+}
+
+#highlightInteractiveButton {
+    background: url('images/231_event_16.png') no-repeat center center;
+}
+
+#variablesButton {
+    background: url('images/229_variables_16.png') no-repeat center center;
+}
+
+#searchButton {
+    background: url('images/232_search_16.png') no-repeat center center;
+}
+
+.sitemapLinkContainer
+{
+	margin-top: 8px;
+	padding-right: 5px;
+	font-size: 12px;
+}
+
+.sitemapLinkField 
+{
+	width: 100%;
+	font-size: 12px;
+	margin-top: 3px;
+}
+
+.sitemapOptionContainer
+{
+	margin-top: 8px;
+	padding-right: 5px;
+	font-size: 12px;
+}
+
+#sitemapOptionsDiv
+{
+	margin-top: 5px;
+	margin-left: 16px;
+}
+
+#viewSelectDiv
+{
+	margin-left: 5px;
+}
+
+#viewSelect
+{
+	width: 70%;
+}
+
+.sitemapUrlOption
+{
+	padding-bottom: 5px;
+}
+
+.optionLabel
+{
+	font-size: 12px;
+}
+
+.sitemapPopupContainer
+{
+    display: none;
+    position: absolute;
+	background-color: #F4F4F4;
+	border: 1px solid #B9B9B9;
+	padding: 5px 5px 5px 5px;
+	margin: 5px 0px 0px 5px;
+    z-index: 1;
+}
+
+#adaptiveViewsContainer
+{
+	margin-left: 0px;
+	padding: 0px;
+}
+
+.adaptiveViewOption
+{
+	padding: 2px;
+}
+
+.adaptiveViewOption:hover
+{ 
+	background-color: rgb(204,235,248);
+	cursor: pointer;
+}
+
+.currentAdaptiveView {
+    font-weight: bold;
+}
+
+.adaptiveCheckboxDiv {
+	height: 15px;
+	width: 15px;
+	float: left;
+}
+
+.checkedAdaptive {
+	background: url('images/adaptivecheck.png') no-repeat center center;
+}
+
+#variablesContainer 
+{
+	max-height: 350px;
+	overflow: auto;
+}
+
+.variableName
+{
+	font-weight: bold;
+}
+
+.variableDiv
+{
+	margin-bottom: 10px;
+}
+
+#variablesClearLink 
+{
+	color: #069;
+	left: 5px;
+}
+
+.searchBoxHint 
+{
+	color: #AAA;
+	font-style: italic;
+}
+
+#sitemapLinksPageName
+{
+	font-weight: bold;
+}
+
+#sitemapOptionsHeader
+{
+	font-weight: bold;
+}
