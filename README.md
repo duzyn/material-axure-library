@@ -10,11 +10,9 @@ This is an Axure widget library based on Google Material Design.
 
 # Demo
 
-You can [watch the dome here](http://www.pengdaiwu.com/material-design-demo/material_design_library_demo.html).
-
 ![Demo](./demo.jpg)
 
-# Version
+# Version Notes
 
 - Removed FontAwesome font, and use [Google Material Design icons](https://github.com/google/material-design-icons/) instead.
 - Add widget: Date Picker and Context Menu.
