@@ -10,7 +10,7 @@ This is an Axure widget library based on Google Material Design.
 
 # Demo
 
-![Demo](./demo.jpg)
+![Demo](./demo.png)
 
 # Release Notes
 
