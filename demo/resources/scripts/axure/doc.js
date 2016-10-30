@@ -34,6 +34,11 @@
             var style = customStyles[key];
             stylesById[style.id] = style;
         }
+        var duplicateStyles = stylesheet.duplicateStyles;
+        for(var duplicateKey in duplicateStyles) {
+            stylesById[duplicateKey] = stylesById[duplicateStyles[duplicateKey]];
+        }
+
         stylesheet.stylesById = stylesById;
     };
 
@@ -45,7 +50,8 @@
 
     var _initializePageData;
     // ******* Dictionaries ******** //
-    (function() {
+    (function () {
+        var scriptIdToParentLayer = {};
         var elementIdToObject = {};
         var scriptIdToObject = {};
         var scriptIdToRepeaterId = {};
@@ -87,14 +93,23 @@
                 _scriptIds[_scriptIds.length] = scriptId;
             }
 
-            // Now map scriptIds to repeaters
+            // Now map scriptIds to repeaters and layers
             var mapScriptIdToRepeaterId = function(scriptId, repeaterId) {
                 scriptIdToRepeaterId[scriptId] = repeaterId;
                 var scriptIds = repeaterIdToScriptIds[repeaterId];
                 if(scriptIds) scriptIds[scriptIds.length] = scriptId;
                 else repeaterIdToScriptIds[repeaterId] = [scriptId];
             };
-            var mapIdsToRepeaterId = function(path, objs, repeaterId) {
+            var mapScriptIdToLayerId = function (obj, layerId, path) {
+                var pathCopy = $ax.deepCopy(path);
+                pathCopy[path.length] = obj.id;
+                var scriptId = $ax.getScriptIdFromPath(pathCopy);
+                if ($ax.public.fn.IsLayer(obj.type)) {
+                    for(var i = 0; i < obj.objs.length; i++) mapScriptIdToLayerId(obj.objs[i], scriptId, path);
+                }
+                scriptIdToParentLayer[scriptId] = layerId;
+            }
+            var mapIdsToRepeaterAndLayer = function(path, objs, repeaterId) {
                 var pathCopy = $ax.deepCopy(path);
 
                 for(var i = 0; i < objs.length; i++) {
@@ -104,23 +119,28 @@
                     // Rdo have no element on page and are not mapped to the repeater
                     if(repeaterId) mapScriptIdToRepeaterId(scriptId, repeaterId);
 
-                    if(obj.type == 'dynamicPanel') {
-                        for(var j = 0; j < obj.diagrams.length; j++) mapIdsToRepeaterId(path, obj.diagrams[j].objects, repeaterId);
-                    } else if(obj.type == 'referenceDiagramObject') {
-                        mapIdsToRepeaterId(pathCopy, $ax.pageData.masters[obj.masterId].diagram.objects, repeaterId);
-                    } else if(obj.type == 'repeater') {
+                    if ($ax.public.fn.IsDynamicPanel(obj.type)) {
+                        for(var j = 0; j < obj.diagrams.length; j++) mapIdsToRepeaterAndLayer(path, obj.diagrams[j].objects, repeaterId);
+                    } else if ($ax.public.fn.IsReferenceDiagramObject(obj.type)) {
+                        mapIdsToRepeaterAndLayer(pathCopy, $ax.pageData.masters[obj.masterId].diagram.objects, repeaterId);
+                    } else if ($ax.public.fn.IsRepeater(obj.type)) {
                         mapScriptIdToRepeaterId(scriptId, scriptId);
-                        mapIdsToRepeaterId(path, obj.objects, scriptId);
+                        mapIdsToRepeaterAndLayer(path, obj.objects, scriptId);
+                    } else if ($ax.public.fn.IsLayer(obj.type)) {
+                        var layerObjs = obj.objs;
+                        for(var j = 0; j < layerObjs.length; j++) {
+                            mapScriptIdToLayerId(layerObjs[j], scriptId, path);
+                        }
                     } else if(obj.objects && obj.objects.length) {
                         if(repeaterId) {
                             for(var j = 0; j < obj.objects.length; j++) {
-                                mapIdsToRepeaterId(path, obj.objects, repeaterId);
+                                mapIdsToRepeaterAndLayer(path, obj.objects, repeaterId);
                             }
                         }
                     }
                 }
             };
-            mapIdsToRepeaterId([], $ax.pageData.page.diagram.objects);
+            mapIdsToRepeaterAndLayer([], $ax.pageData.page.diagram.objects);
         };
 
 
@@ -151,7 +171,7 @@
             if(relativeTo) {
                 var relativeToScriptId;
                 if(relativeTo.srcElement) { //this is eventInfo
-                    relativeToScriptId = $ax.repeater.getScriptIdFromElementId(relativeTo.raisedId || relativeTo.srcElement);
+                    relativeToScriptId = $ax.repeater.getScriptIdFromElementId(relativeTo.srcElement);
                     includeMasterInPath = relativeTo.isMasterEvent;
                 } else if(typeof relativeTo === 'string') { //this is an element id
                     relativeToScriptId = relativeTo;
@@ -165,22 +185,28 @@
                 }
             }
             var fullPath = relativePath.concat(path);
-            return _getScriptIdFromFullPath(fullPath);
+            var scriptId = _getScriptIdFromFullPath(fullPath);
+            return !$ax.visibility.isScriptIdLimbo(scriptId) && scriptId;
         };
         $ax.getScriptIdFromPath = _getScriptIdFromPath;
 
         var _getElementIdsFromPath = function(path, eventInfo) {
             var scriptId = _getScriptIdFromPath(path, eventInfo);
+            if (!scriptId) return [];
+            // Don't need placed check hear. If unplaced, scriptId will be undefined and exit out before here.
             return $ax.getElementIdsFromEventAndScriptId(eventInfo, scriptId);
         };
         $ax.getElementIdsFromPath = _getElementIdsFromPath;
 
-        var _getElementIdFromPath = function(path, params) {
+        var _getElementIdFromPath = function (path, params) {
+            var scriptId = _getScriptIdFromPath(path, params.relativeTo);
+            if (!scriptId) return scriptId;
+
             var itemNum = params.itemNum;
             if(params.relativeTo && typeof params.relativeTo === 'string') {
                 if($jobj(params.relativeTo)) itemNum = $ax.repeater.getItemIdFromElementId(params.relativeTo);
             }
-            return $ax.repeater.createElementId(_getScriptIdFromPath(path, params.relativeTo), itemNum);
+            return $ax.repeater.createElementId(scriptId, itemNum);
         };
         $ax.getElementIdFromPath = _getElementIdFromPath;
 
@@ -269,6 +295,14 @@
         };
         $ax.getWindowInfo = _getWindowInfo;
 
+        var repeaterInfoCache = [];
+        $ax.cacheRepeaterInfo = function(repeaterId, repeaterInfo) {
+            repeaterInfoCache[repeaterId] = repeaterInfo;
+        }
+        $ax.removeCachedRepeaterInfo = function (repeaterId) {
+            repeaterInfoCache[repeaterId] = undefined;
+        }
+
         var _getItemInfo = function(elementId) {
             if(!elementId) return { valid: false };
 
@@ -281,7 +315,7 @@
 
             var scriptId = $ax.repeater.getScriptIdFromElementId(elementId);
             var repeaterId = $ax.getParentRepeaterFromScriptId(scriptId);
-            item.repeater = _getWidgetInfo(repeaterId);
+            item.repeater = repeaterInfoCache[repeaterId] ? repeaterInfoCache[repeaterId] : _getWidgetInfo(repeaterId);
             $ax.repeater.setDisplayProps(item, repeaterId, index);
             item.ismarked = $ax.repeater.isEditItem(repeaterId, index);
             item.isvisible = Boolean($jobj(elementId).length);
@@ -295,33 +329,58 @@
 
             elementId = _getParentElement(elementId);
 
+            var elementAxQuery = $ax('#' + elementId);
             var elementQuery = $jobj(elementId);
             var obj = $obj(elementId);
             var widget = { valid: true, isWidget: true };
             widget.elementId = elementId;
             widget.name = widget.label = (elementQuery.data('label') ? elementQuery.data('label') : '');
             widget.text = $ax('#' + elementId).text();
+            widget.opacity = Number(elementQuery.css('opacity')) * 100;
+            widget.rotation = $ax.move.getRotationDegree(widget.elementId);
             var scriptId = $ax.repeater.getScriptIdFromElementId(elementId);
             var repeaterId = $ax.getParentRepeaterFromScriptId(scriptId);
-            if(repeaterId) widget.repeater = obj.type == 'repeater' ? widget : _getWidgetInfo(repeaterId);
+            if (repeaterId) widget.repeater = $ax.public.fn.IsRepeater(obj.type) ? widget : _getWidgetInfo(repeaterId);
 
-            var x = elementQuery.css('left');
-            if(x !== undefined) x = Number(x.replace('px', ''));
-            var y = elementQuery.css('top');
-            if(y !== undefined) y = Number(y.replace('px', ''));
+            if($ax.public.fn.IsLayer(obj.type)) {
+                var boundingRect = $ax.public.fn.getWidgetBoundingRect(elementId);
+                widget.x = boundingRect.left;
+                widget.y = boundingRect.top;
+                widget.width = boundingRect.width;
+                widget.height = boundingRect.height;
+                if(elementQuery.length != 0) {
+                    widget.pagex = elementAxQuery.left();
+                    widget.pagey = elementAxQuery.top();
+                }
+            } else {
+                var elementExists = elementQuery.length > 0;
+                var x = elementExists ? elementAxQuery.locRelativeIgnoreLayer(false) : 0;
+                var y = elementExists ? elementAxQuery.locRelativeIgnoreLayer(true) : 0;
 
-            if(elementQuery.length != 0) {
-                widget.pagex = $ax.legacy.getAbsoluteLeft(elementQuery);
-                widget.pagey = $ax.legacy.getAbsoluteTop(elementQuery);
+                widget.x = x;
+                widget.y = y;
+
+                if(elementExists) {
+                    widget.pagex = elementAxQuery.left();
+                    widget.pagey = elementAxQuery.top();
+                    widget.width = elementAxQuery.width();
+                    widget.height = elementAxQuery.height();
+                }
+
+                //if (obj.generateCompound) {
+                //    // assume this means that this is a compound vector.
+                //    widget.x = boundingRect.left;
+                //    widget.y = boundingRect.top;
+
+                //    //widget.pagex += boundingRect.left;
+                //    //widget.pagey += boundingRect.top;
+                //}
+
             }
 
-            widget.x = x;
-            widget.y = y;
-            widget.width = elementQuery.width();
-            widget.height = elementQuery.height();
 
             // Right now only dynamic panel can scroll
-            if(obj.type == 'dynamicPanel') {
+            if ($ax.public.fn.IsDynamicPanel(obj.type)) {
                 var stateQuery = $('#' + $ax.visibility.GetPanelState(elementId));
                 widget.scrollx = stateQuery.scrollLeft();
                 widget.scrolly = stateQuery.scrollTop();
@@ -336,7 +395,7 @@
             }
 
             // repeater only props
-            if(obj.type == 'repeater') {
+            if ($ax.public.fn.IsRepeater(obj.type)) {
                 widget.visibleitemcount = repeaterIdToItemIds[scriptId] ? repeaterIdToItemIds[scriptId].length : $ax.repeater.getVisibleDataCount(scriptId);
                 widget.itemcount = $ax.repeater.getFilteredDataCount(scriptId);
                 widget.datacount = $ax.repeater.getDataCount(scriptId);
@@ -344,11 +403,19 @@
                 widget.pageindex = $ax.repeater.getPageIndex(scriptId);
             }
 
-            widget.left = widget.x;
-            widget.top = widget.y;
-            widget.right = widget.x + widget.width;
-            widget.bottom = widget.y + widget.height;
+            widget.left = widget.leftfixed = widget.x;
+            widget.top = widget.topfixed = widget.y;
+            widget.right = widget.rightfixed = widget.x + widget.width;
+            widget.bottom = widget.bottomfixed = widget.y + widget.height;
 
+            if(elementQuery.css('position') == 'fixed') {
+                var windowScrollLeft = $(window).scrollLeft();
+                var windowScrollTop = $(window).scrollTop();
+                widget.leftfixed = widget.left - windowScrollLeft;
+                widget.topfixed = widget.top - windowScrollTop;
+                widget.rightfixed = widget.right - windowScrollLeft;
+                widget.bottomfixed = widget.bottom - windowScrollTop;
+            }
             return widget;
         };
         $ax.getWidgetInfo = _getWidgetInfo;
@@ -400,6 +467,15 @@
             return scriptIdToObject[scriptId];
         };
 
+        $ax.getParentRepeaterFromElementId = function(elementId) {
+            return $ax.getParentRepeaterFromScriptId($ax.repeater.getScriptIdFromElementId(elementId));
+        };
+
+        $ax.getParentRepeaterFromElementIdExcludeSelf = function (elementId) {
+            var repeaterId = $ax.getParentRepeaterFromElementId(elementId);
+            return repeaterId != elementId ? repeaterId : undefined;
+        };
+
         $ax.getParentRepeaterFromScriptId = function(scriptId) {
             return scriptIdToRepeaterId[scriptId];
         };
@@ -439,6 +515,12 @@
             if($ax.getParentRepeaterFromScriptId(rdoId)) rdoId = $ax.repeater.createElementId(rdoId, $ax.repeater.getItemIdFromElementId(elementId));
             return rdoId;
         };
+
+        $ax.getLayerParentFromElementId = function (elementId) {
+            var itemId = $ax.repeater.getItemIdFromElementId(elementId);
+            var scriptId = scriptIdToParentLayer[$ax.repeater.getScriptIdFromElementId(elementId)];
+            return $ax.getParentRepeaterFromElementId(scriptId) ? $ax.repeater.createElementId(scriptId, itemId) : scriptId;
+        }
 
         $ax.updateElementText = function(elementId, text) {
             elementIdToText[elementId] = text;
@@ -500,14 +582,15 @@
             targetUrl = !includeVariables ? to.url : $ax.globalVariableProvider.getLinkUrl(to.url);
 
             if(to.target == "new") {
-                window.open(targetUrl, to.name);
+                window.open(targetUrl, "");
             } else if(to.target == "popup") {
                 var features = _getPopupFeatures(to.popupOptions);
-                window.open(targetUrl, to.name, features);
+                window.open(targetUrl, "", features);
             } else {
                 var targetLocation = window.location;
                 if(to.target == "current") {
                 } else if(to.target == "parent") {
+                    if(!top.opener) return;
                     targetLocation = top.opener.window.location;
                 } else if(to.target == "parentFrame") {
                     targetLocation = parent.location;
@@ -517,7 +600,7 @@
                     return;
                 }
 
-                if(!_needsReload(targetLocation, to.url)) {
+                if (!_needsReload(targetLocation, to.url)) {
                     targetLocation.href = targetUrl || 'about:blank';
                 } else {
                     targetLocation.href = $axure.utils.getReloadPath() + "#" + encodeURI(targetUrl);
@@ -658,11 +741,19 @@
         $ax.globalVariableProvider.getVariableValue(name);
     };
 
+    $ax.getObjectFromElementIdDisregardHex = function (elementId) {
+        var elementIdInput = elementId.charAt(0) == '#' ? elementId.substring(1) : elementId;
+        return this.getObjectFromElementId(elementIdInput);
+    }
+
 
     $ax.getTypeFromElementId = function(elementId) {
-        var elementIdInput = elementId.charAt(0) == '#' ? elementId.substring(1) : elementId;
-        var obj = this.getObjectFromElementId(elementIdInput);
+        var obj = this.getObjectFromElementIdDisregardHex(elementId);
         return obj && obj.type;
     };
+
+    $ax.getNumFromPx = function(pxNum) {
+        return Number(pxNum.replace('px', ''));
+    }
 
 });

@@ -20,7 +20,7 @@ $axure.internal(function($ax) {
     // Hashmap doesn't map objects well. It just toStrings them, making them all the same key. This has to be slow...
     var _originalToCopy = [];
     var _getCopyIndex = function(original) {
-        for(var i = 0; i < _originalToCopy.length; i++) if(original == _originalToCopy[i][0]) return i;
+        for(var i = 0; i < _originalToCopy.length; i++) if(original === _originalToCopy[i][0]) return i;
         return -1;
     };
 
@@ -52,7 +52,7 @@ $axure.internal(function($ax) {
     // Our implementation of splice because it is broken in IE8...
     $ax.splice = function(array, startIndex, count) {
         var retval = [];
-        if(startIndex >= array.length || startIndex < 0) return retval;
+        if(startIndex >= array.length || startIndex < 0 || count == 0) return retval;
         if(!count || startIndex + count > array.length) count = array.length - startIndex;
         for(var i = 0; i < count; i++) retval[i] = array[startIndex + i];
         for(i = startIndex + count; i < array.length; i++) array[i - count] = array[i];
@@ -69,11 +69,11 @@ $axure.internal(function($ax) {
     if(!$ax.document.configuration.linkFlowsToPages && !$ax.document.configuration.linkFlowsToPagesNewWindow) return;
 
     $(window.document).ready(function() {
-        $ax(function(dObj) { return dObj.type == 'flowShape' && dObj.referencePageUrl; }).each(function(dObj, elementId) {
+        $ax(function (dObj) { return ($ax.public.fn.IsVector(dObj.type) || $ax.public.fn.IsSnapshot(dObj.type)) && dObj.referencePageUrl; }).each(function (dObj, elementId) {
 
             var elementIdQuery = $('#' + elementId);
 
-            if($ax.document.configuration.linkFlowsToPages) {
+            if($ax.document.configuration.linkFlowsToPages && !$ax.event.HasClick(dObj)) {
                 elementIdQuery.css("cursor", "pointer");
                 elementIdQuery.click(function() {
                     $ax.navigate({

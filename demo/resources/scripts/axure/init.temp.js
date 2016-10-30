@@ -13,6 +13,30 @@
             notes: $ax.pageData.page.notes
         };
 
+        var anns = [];
+        $ax('*').each(function (dObj, elementId) {
+            pushAnnotation(dObj, elementId);
+        });
+
+        function pushAnnotation(dObj, elementId) {
+            var ann = dObj.annotation;
+            if(ann) {
+                ann["id"] = elementId;
+                ann["label"] = dObj.label + " (" + dObj.friendlyType + ")";
+                anns.push(ann);
+            }
+
+            if(dObj.type == 'repeater') {
+                if(dObj.objects) {
+                    for(var i = 0, len = dObj.objects.length; i < len; i++) {
+                        pushAnnotation(dObj.objects[i]);
+                    }
+                }
+            }
+        }
+
+        pageData.widgetNotes = anns;
+
         //only trigger the page.data setting if the window is on the mainframe
         var isMainFrame = false;
         try {
@@ -65,10 +89,12 @@
             }
         });
 
-        var lastFocusedClickable;
+        window.lastFocusedClickable = null;
+        var _lastFocusedClickableSelector = 'div[tabIndex=0], img[tabIndex=0], input, a';
         var shouldOutline = true;
 
-        $ax(function(dObj) { return dObj.tabbable; }).each(function(dObj, elementId) {
+        $ax(function (dObj) { return dObj.tabbable; }).each(function (dObj, elementId) {
+            if ($ax.public.fn.IsLayer(dObj.type)) $ax.event.layerMapFocus(dObj, elementId);
             var focusableId = $ax.event.getFocusableWidgetOrChildId(elementId);
             $('#' + focusableId).attr("tabIndex", 0);
         });
@@ -81,23 +107,23 @@
             shouldOutline = true;
         });
 
-        $('div[tabIndex=0], img[tabIndex=0], a').focus(function() {
+        $(_lastFocusedClickableSelector).focus(function () {
             if(shouldOutline) {
                 $(this).css('outline', '');
             } else {
                 $(this).css('outline', 'none');
             }
 
-            lastFocusedClickable = this;
+            window.lastFocusedClickable = this;
         });
 
-        $('div[tabIndex=0], img[tabIndex=0], a').blur(function() {
-            if(lastFocusedClickable == this) lastFocusedClickable = null;
+        $(_lastFocusedClickableSelector).blur(function () {
+            if(window.lastFocusedClickable == this) window.lastFocusedClickable = null;
         });
 
         $(window.document).bind('keyup', function(e) {
             if(e.keyCode == '13' || e.keyCode == '32') {
-                if(lastFocusedClickable) $(lastFocusedClickable).click();
+                if(window.lastFocusedClickable) $(window.lastFocusedClickable).click();
             }
         });
 
@@ -118,7 +144,7 @@
             });
 
             $ax(function(diagramObject) {
-                return diagramObject.type == 'dynamicPanel' && diagramObject.scrollbars != 'none';
+                return $ax.public.fn.IsDynamicPanel(diagramObject.type) && diagramObject.scrollbars != 'none';
             }).$().children().bind('touchstart', function() {
                 var target = this;
                 var top = target.scrollTop;
@@ -129,7 +155,7 @@
 
         if(OS_MAC && WEBKIT) {
             $ax(function(diagramObject) {
-                return diagramObject.type == 'comboBox';
+                return $ax.public.fn.IsComboBox(diagramObject.type);
             }).each(function(obj, id) {
                 $jobj($ax.INPUT(id)).css('-webkit-appearance', 'menulist-button').css('border-color', '#999999');
             });
@@ -139,11 +165,15 @@
         $ax.event.initialize();
         $ax.style.initialize();
         $ax.visibility.initialize();
+        $ax.repeater.initialize();
         $ax.dynamicPanelManager.initialize(); //needs to be called after visibility is initialized
         $ax.adaptive.initialize();
         $ax.loadDynamicPanelsAndMasters();
         $ax.adaptive.loadFinished();
-        $ax.repeater.init();
+        var start = (new Date()).getTime();
+        $ax.repeater.initRefresh();
+        var end = (new Date()).getTime();
+        console.log('loadTime: ' + (end - start) / 1000);
         $ax.style.prefetch();
 
         $(window).resize();

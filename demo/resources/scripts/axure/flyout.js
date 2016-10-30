@@ -13,7 +13,7 @@ $axure.internal(function($ax) {
             delete panelToSrc[panelId];
         }
         if(!keepShown) {
-            $ax.action.addAnimation(panelId, function() {
+            $ax.action.addAnimation(panelId, $ax.action.queueTypes.fade, function() {
                 $ax('#' + panelId).hide();
             });
         }
@@ -219,13 +219,33 @@ $axure.internal(function($ax) {
     };
     _placeholderManager.registerPlaceholder = _registerPlaceholder;
 
+    _placeholderManager.refreshPlaceholder = function (elementId) {
+        var info = idToPlaceholderInfo[elementId];
+        if (!info || !info.active) return;
+        $ax.style.SetWidgetPlaceholder(elementId, true, info.text, info.password);
+    }
+
     var _updatePlaceholder = function(elementId, active, clearText) {
         var inputId = $ax.repeater.applySuffixToElementId(elementId, '_input');
 
         var info = idToPlaceholderInfo[elementId];
         if(!info || info.active == active) return;
         info.active = active;
-        $ax.style.SetWidgetPlaceholder(elementId, active, active ? info.text : clearText ? '' : $jobj(inputId).val(), info.password);
+
+        if(active) var value = info.text;
+        else if(!ANDROID) value = clearText ? '' : document.getElementById(inputId).value;
+        else {
+            var currentText = document.getElementById(inputId).value;
+            if(!clearText) value = currentText;
+            else if(currentText == info.text) value = "";
+            else {
+                var lastIndex = currentText.lastIndexOf(info.text);
+                //here i am assuming the text is always inserted in front
+                value = currentText.substring(0, lastIndex);
+            }
+        }
+
+        $ax.style.SetWidgetPlaceholder(elementId, active, value, info.password);
     };
     _placeholderManager.updatePlaceholder = _updatePlaceholder;
 
@@ -238,8 +258,11 @@ $axure.internal(function($ax) {
     var _selectRange = function(elementId, start, end) {
         $jobj(elementId).each(function() {
             if(this.setSelectionRange) {
-                this.focus();
-                this.setSelectionRange(start, end);
+                var validTypes = ["text", "search", "url", "tel", "password"];
+                if(this.tagName.toLowerCase() != "input" || validTypes.indexOf(this.type) > -1) {
+                    this.focus();
+                    this.setSelectionRange(start, end);
+                }
             } else if(this.createTextRange) {
                 var range = this.createTextRange();
                 range.collapse(true);

@@ -12,6 +12,10 @@ $axure.internal(function($ax) {
         //we have to do this because webkit reports the post-transform position but when you set
         //positions it's pre-transform
         if(WEBKIT && rotation) {
+            //we can dynamiclly rotate a widget now, show need to remember the transform rather than just remove it
+            //here jquery.css will return 'none' if element is display none
+            var oldShapeTransform = document.getElementById(shapeId).style['-webkit-transform'];
+            var oldTextTransform = document.getElementById(textId).style['-webkit-transform'];
             $('#' + shapeId).css('-webkit-transform', 'scale(1)');
             $('#' + textId).css('-webkit-transform', 'scale(1)');
         }
@@ -28,8 +32,8 @@ $axure.internal(function($ax) {
 
         //undo the transform reset
         if(WEBKIT && rotation) {
-            $('#' + shapeId).css('-webkit-transform', '');
-            $('#' + textId).css('-webkit-transform', '');
+            $('#' + shapeId).css('-webkit-transform', oldShapeTransform || '');
+            $('#' + textId).css('-webkit-transform', oldTextTransform || '');
         }
     };
 
@@ -73,7 +77,7 @@ $axure.internal(function($ax) {
         else left = sourceLeft - 6;
 
         $ax.globals.MaxZIndex = $ax.globals.MaxZIndex + 1;
-        if(IE) height += 50;
+        if(IE_10_AND_BELOW) height += 50;
 
         var dObj = $ax.getObjectFromElementId(id);
         var ann = dObj.annotation;
@@ -98,7 +102,9 @@ $axure.internal(function($ax) {
         window.scrollTo(scrollX, scrollY);
     };
 
-    $ax.annotation.InitializeAnnotations = function(query) {
+    $ax.annotation.InitializeAnnotations = function (query) {
+        if(!$ax.document.configuration.showAnnotations) return;
+
         query.each(function(dObj, elementId) {
             if(!dObj.annotation) return;
 
@@ -116,7 +122,7 @@ $axure.internal(function($ax) {
                     $('#' + textId).append("<div id='" + elementId + "Note' class='annnoteimage' ></div>");
                 }
                 $('#' + elementId + 'Note').click(function(e) {
-                    $ax.annotation.ToggleWorkflow(e, elementId, 300, 150, false);
+                    $ax.annotation.ToggleWorkflow(e, elementId, 300, 200, false);
                     return false;
                 });
 
@@ -130,10 +136,12 @@ $axure.internal(function($ax) {
                     $('#' + elementId + "_ann").append("<div id='" + elementId + "Note' class='annnoteimage'></div>");
                 }
                 $('#' + elementId + 'Note').click(function(e) {
-                    $ax.annotation.ToggleWorkflow(e, elementId, 300, 150, false);
+                    $ax.annotation.ToggleWorkflow(e, elementId, 300, 200, false);
                     return false;
                 });
             }
+
+            $('#' + elementId + 'Note.annnoteimage').append("<div class='annnoteline'></div><div class='annnoteline'></div><div class='annnoteline'></div>");
         });
     };
 

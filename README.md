@@ -14,6 +14,10 @@ This is an Axure widget library based on Google Material Design.
 
 # Release Notes
 
+-	2016-10-30
+
+	*   Update demo image and prototype.
+
 -   2016-05-12
 
     *   Added Steppers, Progress, Chips and Menu.

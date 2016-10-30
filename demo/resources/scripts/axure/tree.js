@@ -9,16 +9,22 @@ $axure.internal(function($ax) {
         //mouseenter and leave for parent table cell
         $('#' + cellId).mouseenter(function(e) {
             //show current submenu
+//            var submenuElement = document.getElementById(subMenuId);
+//            if($ax.visibility.IsVisible(submenuElement) && submenuElement.style.display !== 'none') return;
             $ax.visibility.SetIdVisible(subMenuId, true);
             $ax.legacy.BringToFront(subMenuId);
-        }).mouseleave(function(e) {
+            _fireEventForSubmenu(subMenuId, "onShow");
+
+        }).mouseleave(function (e) {
             var offset = $submenudiv.offset();
             var subcontwidth = $submenudiv.width();
             var subcontheight = $submenudiv.height();
             //If mouse is not within the submenu (added 3 pixel margin to top and left calculations), then close the submenu...
             if(e.pageX + 3 < offset.left || e.pageX > offset.left + subcontwidth || e.pageY + 3 < offset.top || e.pageY > offset.top + subcontheight) {
-                $submenudiv.find('.sub_menu').andSelf().each(function() {
+                $submenudiv.find('.sub_menu').andSelf().each(function () {
+//                    if(!$ax.visibility.IsVisible(this)) return;
                     $ax.visibility.SetVisible(this, false);
+                    _fireEventForSubmenu(subMenuId, "onHide");
                 });
                 $ax.style.SetWidgetHover(cellId, false);
             }
@@ -29,10 +35,22 @@ $axure.internal(function($ax) {
         //mouseleave for submenu
         $submenudiv.mouseleave(function(e) {
             //close this menu and all menus below it
-            $(this).find('.sub_menu').andSelf().css({ 'visibility': 'hidden', 'display': 'none' });
+            $(this).find('.sub_menu').andSelf().css({ 'visibility': 'hidden', 'display': 'none' }).each(function () {
+//                if(!$ax.visibility.IsVisible(this)) return;
+                _fireEventForSubmenu(this.id, "onHide");
+            });
             $ax.style.SetWidgetHover(cellId, false);
         });
     };
+
+    var _fireEventForSubmenu = function(targetId, eventName) {
+        var diagramObject = $ax.getObjectFromElementId(targetId);
+        var event = diagramObject.interactionMap && diagramObject.interactionMap[eventName];
+        if(event) {
+            var eventInfo = $ax.getEventInfoFromEvent($ax.getjBrowserEvent(), false, targetId);
+            $ax.event.handleEvent(targetId, eventInfo, event, false, true);
+        }
+    }
 
     function IsNodeVisible(nodeId) {
         var current = window.document.getElementById(nodeId);
@@ -49,7 +67,7 @@ $axure.internal(function($ax) {
 
     $ax.tree.ExpandNode = function(nodeId, childContainerId, plusMinusId) {
         var container = window.document.getElementById(childContainerId);
-        if($ax.visibility.IsVisible(container)) return;
+        if(!container || $ax.visibility.IsVisible(container)) return;
         $ax.visibility.SetVisible(container, true);
 
         if(plusMinusId != '') $ax.style.SetWidgetSelected(plusMinusId, true);
@@ -82,7 +100,7 @@ $axure.internal(function($ax) {
 
     $ax.tree.CollapseNode = function(nodeId, childContainerId, plusMinusId) {
         var container = window.document.getElementById(childContainerId);
-        if(!$ax.visibility.IsVisible(container)) return;
+        if(!container || !$ax.visibility.IsVisible(container)) return;
 
         if(plusMinusId != '') $ax.style.SetWidgetSelected(plusMinusId, false);
 
@@ -158,7 +176,7 @@ $axure.internal(function($ax) {
 
     var _getButtonShapeId = function(id) {
         var obj = $obj(id);
-        return obj.type == 'treeNodeObject' ? $ax.getElementIdFromPath([obj.buttonShapeId], { relativeTo: id }) : id;
+        return $ax.public.fn.IsTreeNodeObject(obj.type) ? $ax.getElementIdFromPath([obj.buttonShapeId], { relativeTo: id }) : id;
     };
 
     $ax.tree.SelectTreeNode = function(id, selected) {

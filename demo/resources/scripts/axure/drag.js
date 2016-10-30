@@ -13,7 +13,7 @@
 
         var x, y;
         var tg;
-        if(IE) {
+        if(IE_10_AND_BELOW) {
             x = window.event.clientX + window.document.documentElement.scrollLeft + window.document.body.scrollLeft;
             y = window.event.clientY + window.document.documentElement.scrollTop + window.document.body.scrollTop;
             tg = window.event.srcElement;
@@ -42,18 +42,23 @@
         widgetDragInfo.startTime = (new Date()).getTime();
         widgetDragInfo.targetWidget = tg;
 
-        if(IE) {
-            if($ax.features.supports.windowsMobile) {
-                window.document.attachEvent($ax.features.eventNames.mouseDownName, _dragWidget);
-                window.document.attachEvent($ax.features.eventNames.mouseUpName, _stopDragWidget);
-            } else {
-                window.document.attachEvent('on' + $ax.features.eventNames.mouseMoveName, _dragWidget);
-                window.document.attachEvent('on' + $ax.features.eventNames.mouseUpName, _stopDragWidget);
-            }
-        } else {
-            window.document.addEventListener($ax.features.eventNames.mouseMoveName, _dragWidget, true);
-            window.document.addEventListener($ax.features.eventNames.mouseUpName, _stopDragWidget, true);
-        }
+        var movedownName = IE_10_AND_BELOW && $ax.features.supports.windowsMobile ?
+            $ax.features.eventNames.mouseDownName : $ax.features.eventNames.mouseMoveName;
+        $ax.event.addEvent(document, movedownName, _dragWidget, true);
+        $ax.event.addEvent(document, $ax.features.eventNames.mouseUpName, _stopDragWidget, true);
+
+//        if(IE && BROWSER_VERSION < 9) {
+//            if($ax.features.supports.windowsMobile) {
+//                window.document.attachEvent($ax.features.eventNames.mouseDownName, _dragWidget);
+//                window.document.attachEvent($ax.features.eventNames.mouseUpName, _stopDragWidget);
+//            } else {
+//                window.document.attachEvent('on' + $ax.features.eventNames.mouseMoveName, _dragWidget);
+//                window.document.attachEvent('on' + $ax.features.eventNames.mouseUpName, _stopDragWidget);
+//            }
+//        } else {
+//            window.document.addEventListener($ax.features.eventNames.mouseMoveName, _dragWidget, true);
+//            window.document.addEventListener($ax.features.eventNames.mouseUpName, _stopDragWidget, true);
+//        }
         $ax.legacy.SuppressBubble(event);
     };
 
@@ -61,7 +66,7 @@
         $ax.setjBrowserEvent(jQuery.Event(event));
 
         var x, y;
-        if(IE) {
+        if(IE_10_AND_BELOW) {
             x = window.event.clientX + window.document.documentElement.scrollLeft + window.document.body.scrollLeft;
             y = window.event.clientY + window.document.documentElement.scrollTop + window.document.body.scrollTop;
         } else {
@@ -112,13 +117,13 @@
         $ax.legacy.SuppressBubble(event);
     };
 
-    var _removeSuppressEvents = function() {
-        if(IE) {
-            window.event.srcElement.detachEvent("onclick", _suppressClickAfterDrag);
-            widgetDragInfo.targetWidget.detachEvent("onmousemove", _removeSuppressEvents);
+    var _removeSuppressEvents = function () {
+        if(IE_10_AND_BELOW) {
+            $ax.event.removeEvent(event.srcElement, 'click', _suppressClickAfterDrag, undefined, true);
+            $ax.event.removeEvent(widgetDragInfo.targetWidget, 'mousemove', _removeSuppressEvents, undefined, true);
         } else {
-            window.document.removeEventListener("click", _suppressClickAfterDrag, true);
-            window.document.removeEventListener("mousemove", _removeSuppressEvents, true);
+            $ax.event.removeEvent(document, "click", _suppressClickAfterDrag, true);
+            $ax.event.removeEvent(document, 'mousemove', _removeSuppressEvents, true);
         }
     };
 
@@ -126,21 +131,31 @@
         $ax.setjBrowserEvent(jQuery.Event(event));
 
         var tg;
-        if(IE) {
-            if($ax.features.supports.windowsMobile) {
-                window.document.detachEvent($ax.features.eventNames.mouseDownName, _dragWidget);
-                window.document.detachEvent($ax.features.eventNames.mouseUpName, _stopDragWidget);
 
-            } else {
-                window.document.detachEvent('on' + $ax.features.eventNames.mouseMoveName, _dragWidget);
-                window.document.detachEvent('on' + $ax.features.eventNames.mouseUpName, _stopDragWidget);
-            }
-            tg = window.event.srcElement;
-        } else {
-            window.document.removeEventListener($ax.features.eventNames.mouseMoveName, _dragWidget, true);
-            window.document.removeEventListener($ax.features.eventNames.mouseUpName, _stopDragWidget, true);
-            tg = event.target;
-        }
+
+        var movedownName = IE_10_AND_BELOW && $ax.features.supports.windowsMobile ?
+            $ax.features.eventNames.mouseDownName : $ax.features.eventNames.mouseMoveName;
+        $ax.event.removeEvent(document, movedownName, _dragWidget, true);
+        $ax.event.removeEvent(document, $ax.features.eventNames.mouseUpName, _stopDragWidget, true);
+
+        tg = IE_10_AND_BELOW ? window.event.srcElement : event.target;
+//
+//
+//        if(OLD_IE && BROWSER_VERSION < 9) {
+//            if($ax.features.supports.windowsMobile) {
+//                window.document.detachEvent($ax.features.eventNames.mouseDownName, _dragWidget);
+//                window.document.detachEvent($ax.features.eventNames.mouseUpName, _stopDragWidget);
+//
+//            } else {
+//                window.document.detachEvent('on' + $ax.features.eventNames.mouseMoveName, _dragWidget);
+//                window.document.detachEvent('on' + $ax.features.eventNames.mouseUpName, _stopDragWidget);
+//            }
+//            tg = window.event.srcElement;
+//        } else {
+//            window.document.removeEventListener($ax.features.eventNames.mouseMoveName, _dragWidget, true);
+//            window.document.removeEventListener($ax.features.eventNames.mouseUpName, _stopDragWidget, true);
+//            tg = event.target;
+//        }
 
         if(widgetDragInfo.hasStarted) {
             widgetDragInfo.currentTime = (new Date()).getTime();
@@ -170,17 +185,23 @@
 
             if(widgetDragInfo.targetWidget == tg && !event.changedTouches) {
                 // suppress the click after the drag on desktop browsers
-                if(IE && widgetDragInfo.targetWidget) {
-                    widgetDragInfo.targetWidget.attachEvent("onclick", _suppressClickAfterDrag);
+                if(IE_10_AND_BELOW && widgetDragInfo.targetWidget) {
+                    $ax.event.addEvent(widgetDragInfo.targetWidget, 'click', _suppressClickAfterDrag, true, true);
+                    $ax.event.addEvent(widgetDragInfo.targetWidget, "onmousemove", _removeSuppressEvents, true, true);
                 } else {
-                    window.document.addEventListener("click", _suppressClickAfterDrag, true);
-                }
+                    $ax.event.addEvent(document, "click", _suppressClickAfterDrag, true);
+                    $ax.event.addEvent(document, "mousemove", _removeSuppressEvents, true);
 
-                if(IE && widgetDragInfo.targetWidget) {
-                    widgetDragInfo.targetWidget.attachEvent("onmousemove", _removeSuppressEvents);
-                } else {
-                    window.document.addEventListener("mousemove", _removeSuppressEvents, true);
                 }
+//
+//
+//                if(IE && BROWSER_VERSION < 9 && widgetDragInfo.targetWidget) {
+//                    widgetDragInfo.targetWidget.attachEvent("onclick", _suppressClickAfterDrag);
+//                    widgetDragInfo.targetWidget.attachEvent("onmousemove", _removeSuppressEvents);
+//                } else {
+//                    window.document.addEventListener("click", _suppressClickAfterDrag, true);
+//                    window.document.addEventListener("mousemove", _removeSuppressEvents, true);
+//                }
             }
         }
 
@@ -217,15 +238,15 @@
 
     //    $ax.drag.GetCursorRectangles = function() {
     //        var rects = new Object();
-    //        rects.lastRect = new Rectangle($ax.lastMouseLocation.x, $ax.lastMouseLocation.y, 1, 1);
-    //        rects.currentRect = new Rectangle($ax.mouseLocation.x, $ax.mouseLocation.y, 1, 1);
+    //        rects.lastRect = new rect($ax.lastMouseLocation.x, $ax.lastMouseLocation.y, 1, 1);
+    //        rects.currentRect = new rect($ax.mouseLocation.x, $ax.mouseLocation.y, 1, 1);
     //        return rects;
     //    };
 
     //    $ax.drag.GetWidgetRectangles = function(id) {
     //        var widget = window.document.getElementById(id);
     //        var rects = new Object();
-    //        rects.lastRect = new Rectangle($ax.legacy.getAbsoluteLeft(widget), $ax.legacy.getAbsoluteTop(widget), Number($('#' + id).css('width').replace("px", "")), Number($('#' + id).css('height').replace("px", "")));
+    //        rects.lastRect = new rect($ax.legacy.getAbsoluteLeft(widget), $ax.legacy.getAbsoluteTop(widget), Number($('#' + id).css('width').replace("px", "")), Number($('#' + id).css('height').replace("px", "")));
     //        rects.currentRect = rects.lastRect;
     //        return rects;
     //    };
@@ -246,12 +267,20 @@
     //        return !IsOver(movingRects, targetRects);
     //    }
 
-    $ax.drag.LogMovedWidgetForDrag = function(id) {
-        if(widgetDragInfo.hasStarted) {
-            var widget = $('#' + id);
-            var y = Number(widget.css('top').replace("px", ""));
-            var x = Number(widget.css('left').replace("px", ""));
-            var movedWidgets = widgetDragInfo.movedWidgets;
+    $ax.drag.LogMovedWidgetForDrag = function (id, dragInfo) {
+        dragInfo = dragInfo || widgetDragInfo;
+        if(dragInfo.hasStarted) {
+            var containerIndex = id.indexOf('_container');
+            if(containerIndex != -1) id = id.substring(0, containerIndex);
+
+            // If state or other non-widget id, this should not be dragged, and should exit out to avoid exceptions.
+            if(!$obj(id)) return;
+
+            var query = $ax('#' + id);
+            var x = query.left();
+            var y = query.top();
+
+            var movedWidgets = dragInfo.movedWidgets;
             if(!movedWidgets[id]) {
                 movedWidgets[id] = new Location(x, y);
             }
