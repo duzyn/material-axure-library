@@ -33,7 +33,7 @@ This is an Axure widget library based on Google Material Design.
 # How to use it?
 
 1. You should install Roboto, because I use Roboto as the main font.
-2. Download the Axure library file: [Material Design Axure Library for Axure 8](https://github.com/duzyn/material-axure-library/blob/master/material-design-8.rplib?raw=true)
+2. Download the Axure library file: [Material Design Axure Library for Axure 8](https://github.com/duzyn/material-axure-library/blob/raw/material-design-8.rplib)
 3. Open your Axure, click the three bars icon and choose "Load Library". Find the library file to Load it.
 4. That's all! You can now enjoy your time for making some Material Design prototypes.
 
