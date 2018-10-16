@@ -1,10 +1,4 @@
----
-title: Material Design Axure Library
-author: David Peng
-date: 2015-12-18
----
-
-# What is this?
+# Material Design Axure Library
 
 This is an Axure widget library based on Google Material Design.
 
