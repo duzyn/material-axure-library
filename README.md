@@ -10,8 +10,6 @@ Table of Content
 - [Author](#author)
 - [License](#license)
 
-![Demo](./v9_demo.png)
-
 ## How to use it
 
 1. Firstly, you should install Roboto font, because I use Roboto as the main font.
@@ -27,6 +25,8 @@ Table of Content
 ## Demo
 
 See [online demo](https://846l52.axshare.com/).
+
+![Demo](./v9_demo.png)
 
 ## CHANGELOG
 
