@@ -1,10 +1,14 @@
-# Material Design Axure Library
+# Material Design Axure Library <!-- omit in toc -->
 
 An Axure widget library based on latest Google Material Design guidelines.
 
-## Demo
+Table of Content
 
-See [online demo](https://846l52.axshare.com/).
+- [How to use it](#how-to-use-it)
+- [Demo](#demo)
+- [CHANGELOG](#changelog)
+- [Author](#author)
+- [License](#license)
 
 ![Demo](./v9_demo.png)
 
@@ -19,6 +23,10 @@ See [online demo](https://846l52.axshare.com/).
 
 3. Open your Axure, click the three bars icon and choose "Load Library". Find the library file to Load it.
 4. That's all! You can now enjoy your time for making some Material Design prototypes.
+
+## Demo
+
+See [online demo](https://846l52.axshare.com/).
 
 ## CHANGELOG
 
