@@ -2,7 +2,7 @@
 
 2018-11-02
 
-- I completely redraw the widget library with [Axure 9 beta](https://www.axure.com/blog/axure-rp-9-beta/). Now it's based on newest [Material Design] (https://material.io/) guidelines(so-called Material Design 2), contains all the [components](https://material.io/design/components/):
+- I completely redraw the widget library with [Axure 9 beta](https://www.axure.com/blog/axure-rp-9-beta/). Now it's based on newest [Material Design](https://material.io/) guidelines(so-called Material Design 2), contains all the [components](https://material.io/design/components/):
   
   - App bars: bottom
   - App bars: top

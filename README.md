@@ -2,7 +2,7 @@
 
 An Axure widget library based on latest Google Material Design guidelines.
 
-Table of Content
+Table of Contents
 
 - [How to use it](#how-to-use-it)
 - [Demo](#demo)
