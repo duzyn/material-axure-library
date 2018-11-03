@@ -6,7 +6,7 @@ Table of Contents
 
 - [How to use it](#how-to-use-it)
 - [Demo](#demo)
-- [CHANGELOG](#changelog)
+- [Changelog](#changelog)
 - [Author](#author)
 - [License](#license)
 
@@ -28,7 +28,7 @@ See [online demo](https://846l52.axshare.com/).
 
 ![Demo](./v9_demo.png)
 
-## CHANGELOG
+## Changelog
 
 See [CHANGELOG](CHANGELOG.md).
 
