@@ -24,8 +24,6 @@ Table of Contents
 
 ## Demo
 
-See [online demo](https://www.pengdaiwu.com/material-design-v9/v9.html).
-
 ![Demo](./v9_demo.png)
 
 ## Changelog
